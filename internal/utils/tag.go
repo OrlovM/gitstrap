@@ -25,7 +25,7 @@ func RemoveTagsOmitempty(s interface{}, key string) (interface{}, error) {
 		if err != nil {
 			return nil, err
 		}
-		field.Tag = tag
+		field.Tag = *tag
 		sf[i] = field
 	}
 	newType := reflect.StructOf(sf)
@@ -33,15 +33,14 @@ func RemoveTagsOmitempty(s interface{}, key string) (interface{}, error) {
 	return newValue.Interface(), nil
 }
 
-func removeOmitempty(tag reflect.StructTag, key string) (reflect.StructTag, error) {
-	newTag := *new(reflect.StructTag)
+func removeOmitempty(tag reflect.StructTag, key string) (*reflect.StructTag, error) {
 	tags, err := structtag.Parse(string(tag))
 	if err != nil {
-		return newTag, err
+		return nil, err
 	}
 	yamlTag, err := tags.Get(key)
 	if err != nil {
-		return tag, nil
+		return &tag, nil
 	}
 	for i, v := range yamlTag.Options {
 		if v == "omitempty" {
@@ -50,6 +49,6 @@ func removeOmitempty(tag reflect.StructTag, key string) (reflect.StructTag, erro
 		}
 	}
 	stringTags := fmt.Sprintf(`%v`, tags)
-	newTag = reflect.StructTag(stringTags)
-	return newTag, nil
+	newTag := reflect.StructTag(stringTags)
+	return &newTag, nil
 }
